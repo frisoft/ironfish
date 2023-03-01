@@ -1750,6 +1750,54 @@ describe('Accounts', () => {
 
       await expect(accountAImport.hasTransaction(transaction.hash())).resolves.toBe(true)
     })
+
+    it('should set account createdAt to the earliest transaction timestamp', async () => {
+      const { chain, wallet } = nodeTest
+
+      const account = await useAccountFixture(wallet, 'accountA')
+      account.createdAt = null
+      await wallet.updateAccount(account)
+
+      const block2 = await useMinerBlockFixture(chain, 2, account)
+      await expect(chain).toAddBlock(block2)
+
+      let accountValue = await wallet.walletDb.accounts.get(account.id)
+      Assert.isNotUndefined(accountValue)
+      expect(accountValue.createdAt).toBeNull()
+
+      await wallet.updateHead()
+
+      accountValue = await wallet.walletDb.accounts.get(account.id)
+      Assert.isNotUndefined(accountValue)
+
+      const earliestTransaction = await account.getTransaction(block2.transactions[0].hash())
+      expect(accountValue.createdAt).toEqual(earliestTransaction?.timestamp)
+    })
+
+    it('should not set account createdAt if the connected block is later than the current value', async () => {
+      const { chain, wallet } = nodeTest
+
+      const account = await useAccountFixture(wallet, 'accountA')
+
+      const block2 = await useMinerBlockFixture(chain, 2, account)
+      await expect(chain).toAddBlock(block2)
+      await wallet.updateHead()
+
+      let accountValue = await wallet.walletDb.accounts.get(account.id)
+      Assert.isNotUndefined(accountValue)
+
+      const accountCreatedAt = accountValue.createdAt
+      expect(accountCreatedAt).not.toBeNull()
+
+      const block3 = await useMinerBlockFixture(chain, 3, account)
+      await expect(chain).toAddBlock(block3)
+      await wallet.updateHead()
+
+      // verify that createdAt is unchanged
+      accountValue = await wallet.walletDb.accounts.get(account.id)
+      Assert.isNotUndefined(accountValue)
+      expect(accountValue.createdAt).toEqual(accountCreatedAt)
+    })
   })
 
   describe('getAssetStatus', () => {
@@ -2077,6 +2125,56 @@ describe('Accounts', () => {
         sequence: mintBlock.header.sequence,
         unconfirmed: value,
       })
+    })
+
+    it('should set account.createdAt if the disconnected block is earlier', async () => {
+      const { chain, wallet } = nodeTest
+
+      const account = await useAccountFixture(wallet, 'accountA')
+      account.createdAt = null
+      await wallet.updateAccount(account)
+
+      const block2 = await useMinerBlockFixture(chain, 2, account)
+      await expect(chain).toAddBlock(block2)
+
+      let accountValue = await wallet.walletDb.accounts.get(account.id)
+      Assert.isNotUndefined(accountValue)
+      expect(accountValue.createdAt).toBeNull()
+
+      await wallet.updateHead()
+
+      accountValue = await wallet.walletDb.accounts.get(account.id)
+      Assert.isNotUndefined(accountValue)
+
+      const earliestTransaction = await account.getTransaction(block2.transactions[0].hash())
+      expect(accountValue.createdAt).toEqual(earliestTransaction?.timestamp)
+    })
+
+    it('should not update account createdAt if the disconnected block is later', async () => {
+      const { chain, wallet } = nodeTest
+
+      const account = await useAccountFixture(wallet, 'accountA')
+
+      const block2 = await useMinerBlockFixture(chain, 2, account)
+      await expect(chain).toAddBlock(block2)
+      await wallet.updateHead()
+
+      let accountValue = await wallet.walletDb.accounts.get(account.id)
+      Assert.isNotUndefined(accountValue)
+
+      const accountCreatedAt = accountValue.createdAt
+      expect(accountCreatedAt).not.toBeNull()
+
+      const block3 = await useMinerBlockFixture(chain, 3, account)
+      await expect(chain).toAddBlock(block3)
+      await wallet.updateHead()
+
+      await wallet.disconnectBlock(block3.header)
+
+      // verify that createdAt is unchanged
+      accountValue = await wallet.walletDb.accounts.get(account.id)
+      Assert.isNotUndefined(accountValue)
+      expect(accountValue.createdAt).toEqual(accountCreatedAt)
     })
   })
 
