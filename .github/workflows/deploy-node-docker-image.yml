@@ -1,25 +1,28 @@
 name: Deploy Node Docker Image
 on:
+  push:
+    branches:
+      - "fix/tag-condition"
   workflow_dispatch:
     inputs:
       github_tag_mainnet:
-        description: 'GitHub:mainnet'
+        description: "GitHub:mainnet"
         type: boolean
         default: false
       github_tag_testnet:
-        description: 'GitHub:testnet'
+        description: "GitHub:testnet"
         type: boolean
         default: false
       aws_tag_mainnet:
-        description: 'AWS:mainnet'
+        description: "AWS:mainnet"
         type: boolean
         default: false
       aws_tag_testnet:
-        description: 'AWS:testnet'
+        description: "AWS:testnet"
         type: boolean
         default: false
       aws_tag_git_sha:
-        description: 'AWS:{GIT_SHA}'
+        description: "AWS:{GIT_SHA}"
         type: boolean
         default: false
 
@@ -54,7 +57,12 @@ jobs:
         env:
           AWS_REGISTRY_URL: ${{ secrets.AWS_NODE_REGISTRY_URL }}
 
+      - name: Check ref_type
+        run: |
+          echo ${{ github.ref_type}}
+
       - name: Build Node Image
+        if: ${{ inputs.github_tag_mainnet }}
         run: ./ironfish-cli/scripts/build-docker.sh
 
       - name: Deploy Node Image to GitHub:mainnet
