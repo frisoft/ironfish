@@ -1,7 +1,7 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
-import { Assert, Config } from '@ironfish/sdk'
+import { Assert, Config, Platform } from '@ironfish/sdk'
 import { spawn } from 'child_process'
 
 export function launchEditor(file: string, config?: Config): Promise<number | null> {
@@ -23,4 +23,21 @@ export function launchEditor(file: string, config?: Config): Promise<number | nu
     process.on('exit', (code) => resolve(code))
     process.on('error', (error) => reject(error))
   })
+}
+
+export function launchFinder(dir: string): boolean {
+  const platform = Platform.getName()
+
+  switch (platform) {
+    case 'win32':
+      spawn('explorer', [dir])
+      break
+    case 'darwin':
+      spawn('open', [dir])
+      break
+    default:
+      return false
+  }
+
+  return true
 }
