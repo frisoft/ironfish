@@ -45,7 +45,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18.12.1'
+          node-version: '18.16.0'
           cache: yarn
 
       - name: Install Rust
@@ -55,7 +55,7 @@ jobs:
       - name: Install ziglang
         uses: goto-bus-stop/setup-zig@v2
         with:
-          version: 0.10.0
+          version: 0.10.1
 
       - name: Install dependencies
         run: npm install --no-workspaces
@@ -115,7 +115,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18.12.1'
+          node-version: '18.16'
 
       - name: Download artifacts
         uses: actions/download-artifact@v3
