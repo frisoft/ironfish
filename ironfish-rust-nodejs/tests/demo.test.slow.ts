@@ -17,6 +17,7 @@ describe('Demonstrate the Sapling API', () => {
   beforeAll(async () => {
     // Pay the cost of setting up Sapling outside of any test
     initializeSapling()
+    initSignalHandler()
   })
 
   it('Should generate a key', () => {
