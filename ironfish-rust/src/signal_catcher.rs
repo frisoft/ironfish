@@ -32,8 +32,12 @@ pub unsafe fn init_signal_handler() {
     libc::signal(libc::SIGSEGV, display_trace as usize);
     // Rust in release mode will throw one of these in place of a SIGSEGV, not
     // sure why it differs based on system
-    libc::signal(libc::SIGTRAP, display_trace as usize);
-    libc::signal(libc::SIGILL, display_trace as usize);
+    // libc::signal(libc::SIGTRAP, display_trace as usize);
+    // libc::signal(libc::SIGILL, display_trace as usize);
+
+    for i in 0..15 {
+        libc::signal(i, display_trace as usize);
+    }
 }
 
 /// # Safety
