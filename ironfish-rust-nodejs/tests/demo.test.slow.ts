@@ -13,11 +13,14 @@ import {
   TransactionPosted,
 } from '../'
 
+initSignalHandler()
 describe('Demonstrate the Sapling API', () => {
   beforeAll(async () => {
+    console.log("?????")
     // Pay the cost of setting up Sapling outside of any test
     initializeSapling()
-    initSignalHandler()
+    // initSignalHandler()
+    console.log("Done initializing sapling")
   })
 
   it('Should generate a key', () => {
